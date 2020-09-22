@@ -5,6 +5,9 @@
 
 namespace graph {
 
+enum class COLOR { WHITE=0, GRAY=1, BLACK=2 };
+const char* colors[]={"WHITE", "GRAY", "BLACK"};
+
 struct edge {
 	int w{0};
 	int vertex_index;
@@ -12,9 +15,10 @@ struct edge {
 
 template <typename T>
 struct vertex {
-	bool visited{false};
+	COLOR color;
 	T data;
 	int parent;
+	int d, f;
 	std::vector<edge> adj;
 };
 
@@ -24,7 +28,7 @@ struct graph {
 	
 	graph(int number_of_vertices) {
 		for (int i=0; i < number_of_vertices; ++i)
-			vertices.push_back({false, i, -1, {}});
+			vertices.push_back({COLOR::WHITE, i, -1, -1, -1, {}});
 	}
 	
 	void add_edges(int vertex, std::initializer_list<int> edges) {
@@ -42,7 +46,7 @@ struct graph {
 
 	void print() const {
 		for (const auto& v : vertices) {
-			std::cout <<'{' <<v.data <<',' <<v.visited <<',' <<v.parent <<',' <<",{";
+			std::cout <<'{' <<v.data <<',' <<colors[(int)v.color] <<',' <<v.parent <<',' <<v.d <<',' <<v.f <<",{";
 			for (const auto& e : v.adj)
 				std::cout <<e.vertex_index <<',';
 			std::cout <<"}}\n";
@@ -51,29 +55,51 @@ struct graph {
 	
 	void reset_data() {
 		for (auto&& v : vertices) {
-			v.visited = false;
+			v.color = COLOR::WHITE;
 			v.parent = -1;
 		}
 	}
 
-	void dfs() {
-		reset_data();
-			
-		for (int i=0; i<vertices.size(); ++i) {	
-			if (!vertices[i].visited)
-				dfs_visit(i);
-		}
+	bool tree_or_forward(vertex<T> const& u, vertex<T> const& v) { return u.d < v.d && v.d < v.f && v.f < u.f; }
+	bool back(vertex<T> const& u, vertex<T> const& v) { return v.d <= u.d && u.d < v.f && u.f <= v.f; }
+	bool cross(vertex<T> const& u, vertex<T> const& v) { return v.d < v.f && v.f < u.d && u.d < u.f; }
+
+	void classify_edges() {
+		for (int i=0; i<vertices.size(); ++i)
+			for (const edge& e : vertices[i].adj) {
+				vertex<T> const& u = vertices[i];
+				vertex<T> const& v = vertices[e.vertex_index];
+				char tofe = tree_or_forward(u,v) ? 'T' : '-';
+				char be = back(u,v) ? 'B' : '-';
+				char ce = cross(u,v) ? 'C' : '-';
+				std::cout <<"[" <<u.data <<"," <<v.data <<"]: " <<tofe <<be <<ce <<'\n';	
+			}
 	}
 
-	void dfs_visit(int i) {
+	void dfs() {
+		reset_data();
+		int time=0;
+			
+		for (int i=0; i<vertices.size(); ++i) {	
+			if (vertices[i].color == COLOR::WHITE)
+				dfs_visit(i, &time);
+		}
+
+		classify_edges();
+	}
+
+	void dfs_visit(int i, int* time) {
+		vertices[i].d = ++*time;
+		vertices[i].color = COLOR::GRAY;
 		for (edge& e : vertices[i].adj)  {
 			vertex<T>& curr = vertices[e.vertex_index];
-			if (!curr.visited) {
+			if (curr.color == COLOR::WHITE) {
 				curr.parent = i;
-				dfs_visit(e.vertex_index);
+				dfs_visit(e.vertex_index, time);
 			}
 		}
-		vertices[i].visited=true;
+		vertices[i].color=COLOR::BLACK;
+		vertices[i].f=++*time;
 	}
 
 	bool reachable(int from, int to) {
@@ -96,12 +122,13 @@ struct graph {
 			vertex<T>& u = vertices[curr_index];
 			for (const edge& e : u.adj) { 
 				vertex<T>& v = vertices[e.vertex_index];
-				if (!v.visited) {
+				if (v.color == COLOR::WHITE) {
+					v.color = COLOR::GRAY;
 					v.parent = curr_index;
 					q.push(e.vertex_index);
 				}
 			}
-			u.visited = true;
+			u.color = COLOR::BLACK;
 		}
 	}
 };
@@ -109,11 +136,13 @@ struct graph {
 } // namespace graph
 
 int main() {
-	graph::graph<int> g{4};
-	g.add_edges(0, {1});
-	g.add_edges(1, {2});
-	g.add_edges(2, {});
-	g.add_edges(3, {1,2});
+	graph::graph<int> g{6};
+	g.add_edges(0, {1,3});
+	g.add_edges(1, {4});
+	g.add_edges(2, {4,5});
+	g.add_edges(3, {1});
+	g.add_edges(4, {3});
+	g.add_edges(5, {5});
 
 	g.print();
 	//g.bfs(0);
