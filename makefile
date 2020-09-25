@@ -1,10 +1,13 @@
 CC=g++
 CFLAGS=-std=c++17 -g
 
-all: check_brackets fill_region trees graphs fast_to_string compress_string
+all: check_brackets fill_region trees graphs fast_to_string compress_string bits
 
 trees: trees.cpp
 	$(CC) $(CFLAGS) -o trees trees.cpp
+
+bits: bits.cpp
+	$(CC) $(CFLAGS) -o bits bits.cpp
 
 check_brackets: check_brackets.cpp
 	$(CC) $(CFLAGS) -o check_brackets check_brackets.cpp
@@ -28,3 +31,4 @@ clean:
 	rm graphs
 	rm fast_to_string
 	rm compress_string
+	rm bits
