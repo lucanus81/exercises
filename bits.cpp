@@ -30,6 +30,30 @@ int count_bits(unsigned int N) {
 	return count;
 }
 
+int count_bits2(unsigned int N) {
+	unsigned int count=0;
+	while (N) {
+		N &= (N-1);
+		++count;
+	}
+
+	return count;
+}
+
+int count_bits3(unsigned int N) {
+	static unsigned int map[]{
+		0, 1, 1, 2, 1, 2, 2, 3, 
+    1, 2, 2, 3, 2, 3, 3, 4};
+
+	unsigned int count=0;
+	for (unsigned int i=0; i<sizeof(N)*8/4; ++i) {
+		unsigned int nibble = (N >> (i*4)) & 0xF;
+		count += map[nibble];
+	}
+
+	return count;
+}
+
 void next_previous(unsigned int N) {
 	
 	unsigned int count=count_bits(N);
@@ -51,10 +75,14 @@ unsigned int change_to(unsigned int N, unsigned int M) {
 }
 
 int main() {
-	std::bitset<32> N{"10000000000"}, M{"11111"};
-	std::cout <<std::bitset<32>(multi_set(N.to_ulong(), M.to_ulong(), 2, 6)) <<'\n';
+//	std::bitset<32> N{"10000000000"}, M{"11111"};
+//	std::cout <<std::bitset<32>(multi_set(N.to_ulong(), M.to_ulong(), 2, 6)) <<'\n';
 	
-	next_previous(24);
-	std::cout <<std::bitset<32>(143) <<'\n' <<std::bitset<32>(17) <<'\n' <<change_to(143,17) <<'\n';
-	return 0;
+//	next_previous(24);
+//	std::cout <<std::bitset<32>(143) <<'\n' <<std::bitset<32>(17) <<'\n' <<change_to(143,17) <<'\n';
+	for (unsigned int i=0; i<0xFFFF; ++i)
+		if (count_bits(i) != count_bits3(i))
+			std::cout <<"Error for " <<i <<'\n';
+	//std::cout <<count_bits3(17) <<' ' <<std::bitset<32>(17) <<'\n';	
+return 0;
 }
