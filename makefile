@@ -1,7 +1,14 @@
 CC=g++
 CFLAGS=-std=c++17 -g
 
-all: check_brackets fill_region trees graphs fast_to_string compress_string bits huffman
+all: check_brackets fill_region trees graphs fast_to_string compress_string bits huffman \
+	arrays text
+
+arrays: arrays.cpp
+	$(CC) $(CFLAGS) -o arrays arrays.cpp
+
+text: text.cpp
+	$(CC) $(CFLAGS) -o text text.cpp
 
 huffman: huffman.cpp
 	$(CC) $(CFLAGS) -o huffman huffman.cpp
@@ -35,4 +42,4 @@ clean:
 	rm fast_to_string
 	rm compress_string
 	rm bits
-	rm huffman
+	rm huffman text arrays
