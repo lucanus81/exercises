@@ -72,6 +72,21 @@ void make_heap(std::vector<int>& v) {
 	//	heapify(v, i);
 }
 
+std::vector<int> partial_multiply(const std::vector<int>& v) {
+	std::vector<int> prefix(v.size(), 1);
+	std::vector<int> suffix(v.size(), 1);
+	
+	for (size_t i=1; i<v.size(); ++i)
+		prefix[i]=v[i-1]*prefix[i-1];
+	for (std::size_t j=0, last=v.size()-2; j<=last; ++j)
+		suffix[last-j]=v[last-j+1]*suffix[last-j+1];
+	
+	std::vector<int> res(v.size(), 1);
+	for (size_t i=0; i<v.size(); ++i)
+		res[i]=prefix[i]*suffix[i];
+	return res;
+}
+
 int main() {
 	test_binary_search();
 	test_max_k_elements();
@@ -83,6 +98,11 @@ int main() {
 	std::make_heap(w.begin(), w.end());
 	if (v != w)
 		std::cout <<"error";
+	
+	std::vector<int> r{ partial_multiply({1}) };
+	for (int i : r)
+		std::cout <<i <<' ';
+	std::cout <<'\n';
 
 	return 0;
 }
