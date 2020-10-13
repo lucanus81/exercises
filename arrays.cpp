@@ -49,9 +49,40 @@ void test_max_k_elements() {
 	assert(res == expected);
 }
 
+// -----------------------------------------------------------------
+// Transform an array into an heap
+void heapify(std::vector<int>& v, size_t i) {
+	size_t largest{i}, left{2*i+1}, right{2*i+2};
+	if (left < v.size() && v[largest] < v[left])
+		largest=left;
+	if (right < v.size() && v[largest] < v[right])
+		largest=right;
+
+	if (largest != i) {
+		std::swap(v[i], v[largest]);
+		heapify(v, largest);
+	}
+}
+
+void make_heap(std::vector<int>& v) {
+	size_t start_index{(v.size()/2) -1};
+	for (size_t i=0; i<=start_index; ++i)
+		heapify(v, start_index-i);
+	//for (int i=start_index; i>=0; --i)
+	//	heapify(v, i);
+}
+
 int main() {
 	test_binary_search();
 	test_max_k_elements();
+	
+	std::vector<int> v{1, 3, 5, 4, 6, 13, 10, 9, 8, 15, 17};
+	make_heap(v);
+	
+	std::vector<int> w{v};
+	std::make_heap(w.begin(), w.end());
+	if (v != w)
+		std::cout <<"error";
 
 	return 0;
 }
