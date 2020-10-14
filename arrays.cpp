@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <cassert>
+#include <unordered_set>
 
 int binary_search(int A[], int key, unsigned int start, unsigned int end) {
 	if (end >= start) {		
@@ -41,11 +42,40 @@ std::vector<int> max_k_elements(const std::vector<int>& heap, unsigned int k) {
 	return result;
 }
 
+struct heap_indexer {
+	static size_t left(size_t parent) { return 2*parent + 1; } 
+	static size_t right(size_t parent) { return 2*parent + 2; } 
+};
+
+std::vector<int> max_k_elements2(const std::vector<int>& heap, unsigned int k) {
+	std::vector<int> res;
+	size_t N=heap.size() >= k ? k : heap.size();
+	res.reserve(N);
+
+	res.push_back(heap[0]);
+	std::unordered_set<size_t> c{heap_indexer::left(0), heap_indexer::right(0)};
+	for (size_t i=0; i<N-1; ++i) {
+		auto pos_max=std::max_element(c.begin(), c.end(), 
+			[&heap](size_t l, size_t r) { return heap[l] < heap[r]; });
+		res.push_back(heap[*pos_max]);
+		
+		size_t new_left = heap_indexer::left(*pos_max);
+		size_t new_right = heap_indexer::right(*pos_max);
+		c.erase(pos_max);
+		if (new_left < heap.size())
+			c.insert(new_left);
+		if (new_right < heap.size())
+			c.insert(new_right);
+	}
+
+	return res;
+}
+
 void test_max_k_elements() {
 	std::vector<int> v{90,89,70,36,75,63,65,21,18,15};
 
-	std::vector<int> res{ max_k_elements(v,3) };
-	std::vector expected{90,89,75};
+	std::vector<int> res{ max_k_elements2(v,5) };
+	std::vector<int> expected{ max_k_elements(v,5) };
 	assert(res == expected);
 }
 
@@ -99,7 +129,7 @@ int main() {
 	if (v != w)
 		std::cout <<"error";
 	
-	std::vector<int> r{ partial_multiply({1}) };
+	std::vector<int> r{ partial_multiply({1, 2}) };
 	for (int i : r)
 		std::cout <<i <<' ';
 	std::cout <<'\n';
