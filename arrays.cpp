@@ -117,6 +117,51 @@ std::vector<int> partial_multiply(const std::vector<int>& v) {
 	return res;
 }
 
+struct queue {
+	unsigned int capacity_, size_, front_, rear_;
+	int* buffer_;
+	
+	queue(unsigned int k) 
+		: capacity_{k}, buffer_{new int[capacity_]}, 
+			size_{0}, front_{0}, rear_{0}
+	{}
+	~queue() { delete[] buffer_; }
+	
+	bool is_full() const { return size_ == capacity_; }
+	bool is_empty() const { return size_ == 0; }
+	
+	bool enqueue(int value) {
+		if (is_full())
+			return false;
+		
+		buffer_[rear_] = value;
+		rear_ = (rear_ + 1) % capacity_;
+		++size_;
+		return true;
+	}
+
+	bool dequeue() {
+		if (is_empty())
+			return false;
+		
+		front_ = (front_ + 1) % capacity_;
+		--size_;
+		return true;
+	}
+
+	int front() const { 
+		return buffer_[front_]; 
+	}
+
+	int rear() const {
+		return buffer_[rear_ == 0 ? capacity_ - 1 : rear_ - 1]; 
+	}
+
+	void print() const {
+		std::cout <<"front_ = " <<front_ <<", rear_ = " <<rear_ <<", size_ = " <<size_;
+	}
+};
+
 int main() {
 	test_binary_search();
 	test_max_k_elements();
@@ -133,6 +178,33 @@ int main() {
 	for (int i : r)
 		std::cout <<i <<' ';
 	std::cout <<'\n';
+
+	queue q{3};
+	q.print();
+	std::cout <<'\n';
+	
+	for (unsigned int i=0; i<4; ++i) {
+		q.print(); 
+		std::cout <<", enqueued " <<i <<'\n';
+		q.enqueue(i);
+		q.print();
+		std::cout <<", F = "<<q.front() <<", R = " <<q.rear() <<"\n";
+	}
+	
+	q.dequeue();
+	q.print();
+	std::cout <<", F = "<<q.front() <<", R = " <<q.rear() <<"\n";
+	std::cout <<"------\n";
+  q.dequeue();
+	q.print();
+	std::cout <<", F = "<<q.front() <<", R = " <<q.rear() <<"\n";
+	std::cout <<q.is_empty() <<'\n';	
+	std::cout <<"------\n";
+  q.dequeue();
+	q.print();
+	//std::cout <<", F = "<<q.front() <<", R = " <<q.rear() <<"\n";
+	std::cout <<q.is_empty() <<'\n';	
+
 
 	return 0;
 }
